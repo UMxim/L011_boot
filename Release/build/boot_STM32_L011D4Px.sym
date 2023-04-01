@@ -1,0 +1,11 @@
+08000000 D vectors
+08000010 T Default_Handler
+08000010 W HardFault_Handler
+08000010 W NMI_Handler
+08000012 T Reset_Handler
+08000018 t SendData
+08000040 T main
+080001d4 r firstPacket.4539
+080001dd r errCS.4546
+080001e1 r errType.4547
+20000800 A _estack
