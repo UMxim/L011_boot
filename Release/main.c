@@ -7,16 +7,91 @@
 #define _FW_PAGE_START 		0x08000200 // начало прошивки
 #define _FLASH_SIZE 		0x4000 // полный размер флеша
 
-#define UART 				LPUART1
-//#define UART UART_USART2
-#define UART_PORT 			GPIOA
-#define UART_PIN 			UART_PIN_1
-//#define UART_PIN UART_PIN_4
-//#define UART_PIN UART_PIN_14
+//#define LPUART1_A_1
+//#define LPUART1_A_4		
+#define LPUART1_A_14 //SWCLK
+//#define USART2_A_9
+//#define USART2_A_14 //SWCLK
+
+
+
 #define ANSWER_WAIT_MS 		512U // не более 8000 для этого МК
 #define SYS_CLK_FREQ_KHZ 	2000U
 
 // служебные
+#define UPDATE_MASK(reg, mask, val) reg = ( (reg) & ~(mask) ) | (val)
+
+#ifdef LPUART1_A_1
+	#define UART 				LPUART1
+	#define UART_PORT 			GPIOA	
+	#define UART_BRR			(256*SYS_CLK_FREQ_KHZ*1000)/9600
+	#define GPIO_OPEN_DRAIN		GPIO_OTYPER_OT_1
+	#define GPIO_PULL_UP_MSK	GPIO_PUPDR_PUPD1_Msk
+	#define GPIO_PULL_UP_VAL	GPIO_PUPDR_PUPD1_0
+	#define GPIO_AFR_NUM		0	// 0..7 pin
+	#define GPIO_AFR_MSK		GPIO_AFRL_AFSEL1_Msk
+	#define GPIO_AFR			6 // AF6 для LPUART1
+	#define GPIO_AFR_POS		GPIO_AFRL_AFSEL1_Pos
+	#define GPIO_MODER_MSK		GPIO_MODER_MODE1_Msk
+	#define GPIO_MODER_VAL      GPIO_MODER_MODE1_1
+#endif 
+#ifdef LPUART1_A_4
+	#define UART 				LPUART1
+	#define UART_PORT 			GPIOA	
+	#define UART_BRR			(256*SYS_CLK_FREQ_KHZ*1000)/9600
+	#define GPIO_OPEN_DRAIN		GPIO_OTYPER_OT_4
+	#define GPIO_PULL_UP_MSK	GPIO_PUPDR_PUPD4_Msk
+	#define GPIO_PULL_UP_VAL	GPIO_PUPDR_PUPD4_0
+	#define GPIO_AFR_NUM		0	// 0..7 pin
+	#define GPIO_AFR_MSK		GPIO_AFRL_AFSEL4_Msk
+	#define GPIO_AFR			6 // AF6 для LPUART1
+	#define GPIO_AFR_POS		GPIO_AFRL_AFSEL4_Pos
+	#define GPIO_MODER_MSK		GPIO_MODER_MODE4_Msk
+	#define GPIO_MODER_VAL      GPIO_MODER_MODE4_1
+#endif 
+#ifdef LPUART1_A_14
+	#define UART 				LPUART1
+	#define UART_PORT 			GPIOA	
+	#define UART_BRR			(256*SYS_CLK_FREQ_KHZ*1000)/9600
+	#define GPIO_OPEN_DRAIN		GPIO_OTYPER_OT_14
+	#define GPIO_PULL_UP_MSK	GPIO_PUPDR_PUPD14_Msk
+	#define GPIO_PULL_UP_VAL	GPIO_PUPDR_PUPD14_0
+	#define GPIO_AFR_NUM		1	// 8..16 pin
+	#define GPIO_AFR_MSK		GPIO_AFRH_AFSEL14_Msk
+	#define GPIO_AFR			6 // AF6 для LPUART1
+	#define GPIO_AFR_POS		GPIO_AFRH_AFSEL14_Pos
+	#define GPIO_MODER_MSK		GPIO_MODER_MODE14_Msk
+	#define GPIO_MODER_VAL      GPIO_MODER_MODE14_1
+#endif 
+#ifdef USART2_A_9
+	#define UART 				USART2
+	#define UART_PORT 			GPIOA	
+	#define UART_BRR			(SYS_CLK_FREQ_KHZ*1000)/9600
+	#define GPIO_OPEN_DRAIN		GPIO_OTYPER_OT_9
+	#define GPIO_PULL_UP_MSK	GPIO_PUPDR_PUPD9_Msk
+	#define GPIO_PULL_UP_VAL	GPIO_PUPDR_PUPD9_0
+	#define GPIO_AFR_NUM		1	// 8..16 pin
+	#define GPIO_AFR_MSK		GPIO_AFRH_AFSEL9_Msk
+	#define GPIO_AFR			4 // AF6 для LPUART1
+	#define GPIO_AFR_POS		GPIO_AFRH_AFSEL9_Pos
+	#define GPIO_MODER_MSK		GPIO_MODER_MODE9_Msk
+	#define GPIO_MODER_VAL      GPIO_MODER_MODE9_1
+#endif 
+#ifdef USART2_A_14
+	#define UART 				USART2
+	#define UART_PORT 			GPIOA	
+	#define UART_BRR			(SYS_CLK_FREQ_KHZ*1000)/9600
+	#define GPIO_OPEN_DRAIN		GPIO_OTYPER_OT_14
+	#define GPIO_PULL_UP_MSK	GPIO_PUPDR_PUPD14_Msk
+	#define GPIO_PULL_UP_VAL	GPIO_PUPDR_PUPD14_0
+	#define GPIO_AFR_NUM		1	// 8..16 pin
+	#define GPIO_AFR_MSK		GPIO_AFRH_AFSEL14_Msk
+	#define GPIO_AFR			4 // AF6 для LPUART1
+	#define GPIO_AFR_POS		GPIO_AFRH_AFSEL14_Pos
+	#define GPIO_MODER_MSK		GPIO_MODER_MODE14_Msk
+	#define GPIO_MODER_VAL      GPIO_MODER_MODE14_1
+#endif 
+
 #define _PAGES_FOR_WRITE 	((0x08000000 + _FLASH_SIZE - _FW_PAGE_START) >> _PAGE_SIZE_POW)
 #define ERASE 				(FLASH_PECR_ERASE | FLASH_PECR_PROG)
 
@@ -90,12 +165,12 @@ int main(void)
 	RCC->APB1ENR = RCC_APB1ENR_LPUART1EN | RCC_APB1ENR_USART2EN; 
 	RCC->IOPENR = RCC_IOPENR_GPIOAEN;
 	UART->CR3 = USART_CR3_HDSEL;
-	UART->BRR = 0xD055;
+	UART->BRR = UART_BRR;
 	// GPIO	
-	UART_PORT->OTYPER = GPIO_OTYPER_OT_1; // OpenDrain
-	UART_PORT->PUPDR |= GPIO_PUPDR_PUPD1_0;		
-	UART_PORT->AFR[0] = 6 << GPIO_AFRL_AFSEL1_Pos;
-	UART_PORT->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE1_Msk) | GPIO_MODER_MODE1_1; 
+	UART_PORT->OTYPER |= GPIO_OPEN_DRAIN; // OpenDrain 1
+	UPDATE_MASK(UART_PORT->PUPDR, GPIO_PULL_UP_MSK, GPIO_PULL_UP_VAL);		//2
+	UPDATE_MASK(UART_PORT->AFR[GPIO_AFR_NUM], GPIO_AFR_MSK, GPIO_AFR << GPIO_AFR_POS);
+	UPDATE_MASK(UART_PORT->MODER, GPIO_MODER_MSK, GPIO_MODER_VAL);
 	
 	//
 	uint32_t buff32[(1<<_PAGE_SIZE_POW) + 5]; // потому-что памяти завались....
@@ -139,7 +214,7 @@ int main(void)
 	
 		if (buff[1] != 0x88)
 		{			
-			SendData(errType, sizeof(errType));
+			//SendData(errType, sizeof(errType));
 			continue;
 		}
 	

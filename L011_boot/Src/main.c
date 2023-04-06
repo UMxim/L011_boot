@@ -131,6 +131,18 @@ static void Go_To_User_App(void)
     Jump_To_Application();		                        //запускаем приложение	
 }
 
+#define UPDATE_MASK(reg, mask, val) reg = ( (reg) & ~(mask) ) | (val)
+	#define UART 				LPUART1
+	#define UART_PORT 			GPIOA	
+	#define GPIO_OPEN_DRAIN		GPIO_OTYPER_OT_1
+	#define GPIO_PULL_UP_MSK	GPIO_PUPDR_PUPD1_Msk
+	#define GPIO_PULL_UP_VAL	GPIO_PUPDR_PUPD1_0
+	#define GPIO_AFR_NUM		0	// 0..7 pin
+	#define GPIO_AFR_MSK		GPIO_AFRL_AFSEL1_Msk
+	#define GPIO_AFR			6 // AF6 для LPUART1
+	#define GPIO_AFR_POS		GPIO_AFRL_AFSEL1_Pos
+	#define GPIO_MODER_MSK		GPIO_MODER_MODE1_Msk
+	#define GPIO_MODER_VAL      GPIO_MODER_MODE1_1
 /* USER CODE END 0 */
 
 /**
@@ -151,10 +163,10 @@ int main(void)
 	UART->CR3 = USART_CR3_HDSEL;
 	UART->BRR = 0xD055;
 	// GPIO	
-	UART_PORT->OTYPER |= GPIO_OTYPER_OT_1; // OpenDrain
-	UART_PORT->PUPDR |= GPIO_PUPDR_PUPD1_0;		
-	UART_PORT->AFR[0] = 6 << GPIO_AFRL_AFSEL1_Pos;
-	UART_PORT->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE1_Msk)	| GPIO_MODER_MODE1_1; 
+	UART_PORT->OTYPER |= GPIO_OPEN_DRAIN; // OpenDrain 1
+	UPDATE_MASK(UART_PORT->PUPDR, GPIO_PULL_UP_MSK, GPIO_PULL_UP_VAL);		//2
+	UPDATE_MASK(UART_PORT->AFR[GPIO_AFR_NUM], GPIO_AFR_MSK, GPIO_AFR << GPIO_AFR_POS);
+	UPDATE_MASK(UART_PORT->MODER, GPIO_MODER_MSK, GPIO_MODER_VAL);
 	
 	//
 	uint32_t buff32[(1<<_PAGE_SIZE_POW) + 5]; // потому-что памяти завались....
